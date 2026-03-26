@@ -1,0 +1,24 @@
+{% extends "school/student_dashboard.html" %}
+
+{% block content %}
+<h3>Student Forum</h3>
+
+<a href="{% url 'create_post' %}"> {% trans  "New Post" %}</a>
+
+<ul>
+  {% for post in posts %}
+    <li>
+      <a href="{% url 'post_detail' post.pk %}">
+        {{ post.content|truncatechars:50 }}
+      </a>
+      <br>
+      <small>
+        {{ post.author.username }} |
+        {{ post.submitted_at|date:"d.m.Y H:i" }}
+      </small>
+    </li>
+  {% empty %}
+    <li>{% trans "There is no post yet" %}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

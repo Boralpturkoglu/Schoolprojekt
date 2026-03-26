@@ -1,0 +1,56 @@
+from django.urls import path
+from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    path("home/", views.home, name="home"),
+    path("register/",views.register,name="register"),
+    path("pricing/", views.pricing, name="pricing"),
+    path("history/", views.history, name="history"),
+    path("team/", views.team, name="team"),
+    path("school/", views.school, name="school"),
+    path("login/",views.login,name="login"),
+    path("logout/" ,views.logout,name="logout"),
+    path("studentpage/", views.student_dashboard, name="student_dashboard"),
+    path("teacherpage/", views.teacher_dashboard, name="teacher_dashboard"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("add_grade/<int:enrollment_id>/", views.add_grade, name="add_grade"),
+    path('calendar/', views.calendar_view, name='calendar_view'),  # <-- Burada name calendar_view olmalı
+    path('add-event/', views.add_event, name='add_event'),
+    path('event-list/', views.event_list, name='event_list'),
+    path('profile/', views.profile_view, name='profile_view'),
+    path('profile/edit', views.profile_edit,name='profile_edit'),
+    path('my-grades/', views.my_grades, name='my_grades'),
+    path("student/", views.student_forum_list, name="student_forum_list"),
+    path("teacher/", views.teacher_forum_list, name="teacher_forum_list"),
+    path("post/<int:pk>/", views.post_detail, name="post_detail"),
+    path("post/create/", views.create_post, name="create_post"),
+    path("post/<int:pk>/like/", views.like_post, name="like_post"),
+    path("posts/", views.post_list, name="post_list"),
+    path('delete/<int:pk>/', views.delete_post, name='delete_post'),    
+    path("quiz/add/", views.add_quiz, name="add_quiz"),
+    path("my_lessons/", views.my_lessons, name="my_lessons"),
+    path("enroll/<int:lesson_id>/", views.enroll_lesson, name="enroll_lesson"),
+    path('dropout/<int:lesson_id>/', views.dropout_lesson, name='dropout_lesson'),
+    path('lunch_programm/',views.lunch_view,name="lunch_view"),
+    path("quiz/",views.my_quiz, name="my_quiz"),
+    path("quiz/<int:pk>/take/", views.take_quiz, name="take_quiz"),
+    path("materials/upload/", views.upload_material, name="upload_material"),
+    path("materials/<int:lesson_id>/",views.material_detail, name="material_detail"),
+    path("contact/",views.contact, name="contact"),
+    path("news/", views.news_list, name="news_list"),
+    path("news/<int:pk>/", views.news_detail, name="news_detail"),
+    path("post/<int:post_id>/like/", views.like_post, name="like_post"),
+    path('forum/kategorie/<int:kategorie_id>/', views.post_list, name='post_list_by_category'),
+    path('library/',views.library,name="library"),
+    path('sport_fields/',views.sport_fields,name="sport_fields"),
+    path('buildings/',views.building,name="building"),
+    path('karriere/',views.karriere_view,name="karriere_view"),
+    path('karriere/<int:pk>/', views.job_detail_view, name='job_detail'),
+    path('announcements/', views.announcement_list, name='announcement_list'),
+    path("chat/", views.chat_page, name="chat_page"),
+    path("chat/api/", views.gemini_chat, name="gemini_chat"),
+    ] 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

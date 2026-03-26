@@ -1,0 +1,15 @@
+{% extends "school/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container my-5">
+  <h2>{{ news_item.titel }}</h2>
+  <p class="text-muted">{{ news_item.erstellt_at|date:"d.m.Y" }}</p>
+  <img src="{{ news_item.bild.url }}" class="img-fluid rounded mb-4">
+  <p>{{ news_item.voll_text }}</p>
+
+  <a href="{% url 'news_list' %}" class="btn btn-secondary mt-3">
+    {% trans "back" %}
+  </a>
+</div>
+{% endblock %}

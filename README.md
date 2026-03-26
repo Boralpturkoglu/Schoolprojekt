@@ -228,7 +228,7 @@ Die Authentifizierung erfolgt über Djangos eingebautes Auth-System.
 ⚙️ Funktionen
 🔒 Admin-Seite:
 ![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2014.51.44.png)
-
+Hier konnen Sie alle Modelle verwalten
  
 🏠 Startseite:
 ![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2013.40.47.png)

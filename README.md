@@ -227,30 +227,42 @@ Die Authentifizierung erfolgt über Djangos eingebautes Auth-System.
 
 ⚙️ Funktionen
 🔒 Admin-Seite:
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2014.51.44.png)
 
  
 🏠 Startseite:
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2013.40.47.png)
 
 
 Zeigt dynamisch aktuelle Nachrichten und Ankündigungen.
 
 💼 Karriereseite:
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2013.44.17.png)
 
 Stellenangebote verwaltet über Django Admin.
 
 👨‍🏫 Teamseite:
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2014.39.55.png)
 
 Vorstellung von Lehrern und Verwaltungsmitarbeitern.
 
 📚 Bibliothek & Einrichtungen:
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2015.33.22.png)
 
 Informationsseiten mit strukturiertem Inhalt.
 
 📩 Kontaktformular:
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2014.47.20.png )
 
 Benutzer können direkt Nachrichten an die Schule senden.
 
 🤖 AI-Bot Integration:
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2014.44.50.png)
+
+Beispiele:
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2015.30.48.png)
+
+![umage url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2015.31.24.png)
 
 Interaktive Unterstützung via Gemini API.
 
@@ -267,6 +279,7 @@ Nie SECRET_KEY öffentlich freigeben
 Verwenden Sie PostgreSQL in Produktion
 
 ## License
+![image url](https://github.com/Boralpturkoglu/Schoolprojekt/blob/11e43ce4949fce6e16e8c551f0178b52a507cf0a/Screenshot%202026-03-26%20at%2015.27.34.png)
 
 This project is licensed under the MIT License - see the [LICENSE] file for details.
 Kostenlos nutzbar und modifizierbar.

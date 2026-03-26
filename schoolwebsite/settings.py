@@ -138,7 +138,7 @@ LOCALE_PATHS = [
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-GEMINI_API_KEY="AIzaSyBmGv5aI6XKYLWML1Uw62K4l1Od8QR37FI"
+GEMINI_API_KEY=""
 STATIC_URL = "static/"
 
 

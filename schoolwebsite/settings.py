@@ -142,6 +142,7 @@ GEMINI_API_KEY="AIzaSyBmGv5aI6XKYLWML1Uw62K4l1Od8QR37FI"
 STATIC_URL = "static/"
 
 
+
 MEDIA_URL= "media/"
 MEDIA_ROOT= os.path.join(BASE_DIR,'media')
 

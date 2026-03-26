@@ -167,118 +167,156 @@ def logout(request):
 
 @login_required
 def add_grade(request, enrollment_id):
-   
+    # Nur Lehrer dürfen Noten hinzufügen
     if request.user.person.role != "teacher":
         return HttpResponseForbidden("Bu işlemi gerçekleştirmek için yetkiniz yok.")
-
+    
     enrollment = get_object_or_404(Enrollment, id=enrollment_id)
-
+    
+    # Prüfen, ob der Lehrer diesen Kurs unterrichtet
     if enrollment.lesson not in request.user.lessons.all():
         return HttpResponseForbidden("Bu derse not ekleme yetkiniz yok.")
-   
+    
     if request.method == "POST":
         form = GradeForm(request.POST)
         if form.is_valid():
             grade = form.save(commit=False)
-            grade.enrollment = enrollment
-            grade.given_by = request.user
+            grade.enrollment = enrollment  # Note dem Einschreibung zuweisen
+            grade.given_by = request.user  # Note vom Lehrer
             grade.save()
-            return redirect("teacher_dashboard") 
+            return redirect("teacher_dashboard")
     else:
-        form = GradeForm()
-
+        form = GradeForm()  # Leeres Formular für GET
+    
     return render(request, "school/add_grade.html", {"form": form, "enrollment": enrollment})
+
 
 @login_required
 def calendar_view(request):
+    # Zeigt den Kalender an
     return render(request, "school/calendar.html")
+
 
 @login_required
 def add_event(request):
+    # Ereignis hinzufügen
     if request.method == "POST":
         form = EventForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("teacher_dashboard") 
+            form.save()  # Speichert das Ereignis
+            return redirect("teacher_dashboard")
     else:
-        form = EventForm()
+        form = EventForm()  # Leeres Formular für GET
     return render(request, "school/add_event.html", {"form": form})
+
 
 @login_required
 def event_list(request):
+    # Alle Ereignisse abrufen
     events = Event.objects.all()
+    
+    # Filter je nach Rolle des Benutzers
     if hasattr(request.user, "person"):
         if request.user.person.role == "teacher":
             events = events.filter(audience__in=["teacher","both"])
         elif request.user.person.role == "student":
             events = events.filter(audience__in=["student","both"])
-    # JSON 
-    data = [ { "title": event.title, "start": event.anfang.isoformat(), "end": event.ende.isoformat() if event.ende else None, } for event in events ]
+    
+    # Daten für JSON-Ausgabe vorbereiten
+    data = [
+        {
+            "title": event.title,
+            "start": event.anfang.isoformat(),
+            "end": event.ende.isoformat() if event.ende else None,
+        } for event in events
+    ]
     return JsonResponse(data, safe=False)
+
 
 @login_required
 def my_grades(request):
+    # Nur Schüler dürfen ihre Noten sehen
     if request.user.person.role != "student":
         return redirect("teacher_dashboard")
+    
     enrollments = Enrollment.objects.filter(student__user=request.user)
     grades = Grade.objects.filter(enrollment__student__user=request.user)
-    return render(request, "school/mygrades.html", { "enrollments": enrollments, "grades": grades })
+    return render(request, "school/mygrades.html", {"enrollments": enrollments, "grades": grades})
 
-# Forum – list
 
+# Forum – Liste für Schüler
 @login_required
 def student_forum_list(request):
-    posts = Post.objects.all().order_by('-submitted_at')
+    posts = Post.objects.all().order_by('-submitted_at')  # Beiträge nach Datum sortieren
     return render(request, 'school/student_forum.html', {'posts': posts})
 
 
-# Forum – lehrer
-
+# Forum – Liste für Lehrer
 @login_required
 def teacher_forum_list(request):
-    posts = Post.objects.all().order_by('-submitted_at')
+    posts = Post.objects.all().order_by('-submitted_at')  # Beiträge nach Datum sortieren
     return render(request, 'school/teacher_forum.html', {'posts': posts})
 
 
-# Forum – student
-
+# Forum – Detailansicht eines Beitrags
 @login_required
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    comments = post.comments.all().order_by("-submitted_at")
+    comments = post.comments.all().order_by("-submitted_at")  # Kommentare nach Datum sortieren
+    
     if request.method == "POST":
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
-            comment.post = post
-            comment.commentauthor = request.user
+            comment.post = post  # Kommentar mit Beitrag verknüpfen
+            comment.commentauthor = request.user  # Autor setzen
             comment.save()
             return redirect("post_detail", pk=post.pk)
     else:
-        form = CommentForm()
-    context = { "post": post, "comments": comments, "form": form, "like_count": post.likes.count(), }
+        form = CommentForm()  # Leeres Formular für GET
+    
+    context = {
+        "post": post,
+        "comments": comments,
+        "form": form,
+        "like_count": post.likes.count(),  # Anzahl Likes
+    }
     return render(request, "school/post_detail.html", context)
 
+
+# Forum – alle Beiträge auflisten
 @login_required
 def post_list(request, kategorie_id=None):
-    posts = Post.objects.annotate( like_count=Count("likes") ).order_by("-submitted_at")
-    kategories = Kategorie.objects.all()
+    # Beiträge nach Anzahl Likes annotieren und nach Datum sortieren
+    posts = Post.objects.annotate(like_count=Count("likes")).order_by("-submitted_at")
+    kategories = Kategorie.objects.all()  # Alle Kategorien abrufen
+    
     if kategorie_id:
-        posts = posts.filter(kategorie_id=kategorie_id)
-    top_post = posts.order_by("-like_count").first()
-    context = { "posts": posts, "kategories": kategories, "top_post": top_post, "kategorie_id": int(kategorie_id) if kategorie_id else None }
+        posts = posts.filter(kategorie_id=kategorie_id)  # Filter nach Kategorie
+    
+    top_post = posts.order_by("-like_count").first()  # Beitrag mit den meisten Likes
+    context = {
+        "posts": posts,
+        "kategories": kategories,
+        "top_post": top_post,
+        "kategorie_id": int(kategorie_id) if kategorie_id else None,
+    }
     return render(request, "school/post_list.html", context)
 
+
+# Forum – Beiträge nach Kategorie filtern
 @login_required
 def post_list_by_category(request, kategorie_id):
-    kategories = Kategorie.objects.all() 
-    active_kategorie = kategorie_id 
-   
-    posts = Post.objects.filter(kategorie_id=kategorie_id).order_by("-submitted_at")
-    context = { "posts": posts, "kategories": kategories, "active_kategorie": active_kategorie, }
+    kategories = Kategorie.objects.all()  # Alle Kategorien abrufen
+    active_kategorie = kategorie_id  # Aktive Kategorie markieren
+    
+    posts = Post.objects.filter(kategorie_id=kategorie_id).order_by("-submitted_at")  # Beiträge filtern
+    context = {
+        "posts": posts,
+        "kategories": kategories,
+        "active_kategorie": active_kategorie,
+    }
     return render(request, "school/post_list.html", context)
-
-
 # Forum – create post
 
 @login_required
@@ -312,164 +350,205 @@ def like_post(request, pk):
 def delete_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
   
+    # Prüfen, ob der angemeldete Benutzer der Autor des Beitrags ist
     if request.user != post.author :
         return HttpResponseForbidden("You are not allowed.")
-    post.delete()
+    post.delete()  # Beitrag löschen
     return redirect("post_list")
 
 @login_required
 def add_quiz(request):
+    # Nur Lehrer dürfen Quiz erstellen
     if not hasattr(request.user, "person") or request.user.person.role != "teacher":
         return HttpResponseForbidden("You are not allowed")
+    
     if request.method == "POST":
         form = QuizForm(request.POST, user=request.user)
         if form.is_valid():
-            form.save()
+            form.save()  # Quiz speichern
             return redirect("teacher_dashboard")
     else:
-        form = QuizForm(user=request.user)
+        form = QuizForm(user=request.user)  # Leeres Formular für GET
     return render(request, "school/add_question.html", {"form": form})
 
 @login_required
 def my_lessons(request):
+    # Nur Schüler dürfen ihre Kurse sehen
     if request.user.person.role != "student":
         return HttpResponseForbidden("you are not allowed")
+    
     student = request.user.student
     lessons = Lesson.objects.all()
-
-    enrolled_lesson_ids = list( Enrollment.objects.filter(student=student).values_list('lesson__id', flat=True) )
-    return render(request, "school/my_lessons.html", { "lessons": lessons, "enrolled_lesson_ids": enrolled_lesson_ids, })
+    
+    # IDs der Kurse, in die der Schüler eingeschrieben ist
+    enrolled_lesson_ids = list(Enrollment.objects.filter(student=student).values_list('lesson__id', flat=True))
+    return render(request, "school/my_lessons.html", {"lessons": lessons, "enrolled_lesson_ids": enrolled_lesson_ids})
 
 @login_required
 def enroll_lesson(request, lesson_id):
+    # Nur Schüler können sich einschreiben
     if request.user.person.role != "student":
         return HttpResponseForbidden("Only students can enroll.")
+    
     student = request.user.student
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    Enrollment.objects.get_or_create(student=student, lesson=lesson)
+    Enrollment.objects.get_or_create(student=student, lesson=lesson)  # Einschreibung erstellen, falls nicht vorhanden
     return redirect("my_lessons")
 
 @login_required
 def dropout_lesson(request, lesson_id):
+    # Nur Schüler können sich abmelden
     if request.user.person.role != "student":
         return HttpResponseForbidden("Only students can dropout.")
+    
     student = request.user.student
     enrollment = Enrollment.objects.filter(student=student, lesson_id=lesson_id).first()
     if enrollment:
-        enrollment.delete()
+        enrollment.delete()  # Einschreibung löschen
     return redirect("my_lessons")
 
 @login_required
 def lunch_view(request):
- 
+    # Nur Schüler und Lehrer dürfen den Speiseplan sehen
     if request.user.person.role not in ["student", "teacher"]:
         return HttpResponseForbidden("You are not allowed")
-
+    
     lunches = Lunch.objects.all()
-
     return render(request, "school/lunch.html", {"lunches": lunches})
 
 @login_required
 def my_quiz(request):
+    # Nur Schüler dürfen Quiz sehen
     if request.user.person.role != "student":
         return HttpResponseForbidden("you are not allowed")
+    
     student = request.user.student
-  
-    enrolled_lesson_ids = list( Enrollment.objects.filter(student=student) .values_list('lesson__id', flat=True) )
-  
+    # IDs der Kurse, in die der Schüler eingeschrieben ist
+    enrolled_lesson_ids = list(Enrollment.objects.filter(student=student).values_list('lesson__id', flat=True))
+    
+    # Alle Quiz für eingeschriebene Kurse
     quizes = Quiz.objects.filter(lesson__id__in=enrolled_lesson_ids)
-    return render(request, "school/my_quizez.html", { "quizes": quizes, "enrolled_lesson_ids": enrolled_lesson_ids })
+    return render(request, "school/my_quizez.html", {"quizes": quizes, "enrolled_lesson_ids": enrolled_lesson_ids})
 
 @login_required
 def take_quiz(request, pk):
-    
+    # Nur Schüler dürfen Quiz machen
     if request.user.person.role != "student":
         return HttpResponseForbidden("You are not allowed")
+    
     student = request.user.student
     quiz = get_object_or_404(Quiz, pk=pk)
    
+    # Prüfen, ob der Schüler für den Kurs eingeschrieben ist
     if not Enrollment.objects.filter(student=student, lesson=quiz.lesson).exists():
         return HttpResponseForbidden("You are not enrolled in this lesson")
-    # Antwort bekommen und die Richtigkeit uberprufen
+    
+    # Antwort erhalten und Richtigkeit prüfen
     if request.method == "POST":
-        # Wir erhalten die Antwort , die von Form kommt.
-        selected_answer = request.POST.get("answer")
-        # Check die rictige Antwort
-        ergebniss = 1 if selected_answer == quiz.richtigeantwort else 0
-        # da kannst du einen Versuch fur Quiz herstellen
-        Quiz_Versuch.objects.create( quiz=quiz, user=request.user, ergebniss=ergebniss, )
+        selected_answer = request.POST.get("answer")  # Antwort vom Formular
+        ergebniss = 1 if selected_answer == quiz.richtigeantwort else 0  # Prüfen der richtigen Antwort
+        
+        # Quiz-Versuch erstellen
+        Quiz_Versuch.objects.create(quiz=quiz, user=request.user, ergebniss=ergebniss)
       
-        return render(request, "school/quiz_result.html", { "quiz": quiz, "ergebniss": ergebniss, "selected_answer":selected_answer }) # 4️⃣ GET: quiz sorularını göster
-    return render(request, "school/take_quiz.html", { "quiz": quiz })
+        return render(request, "school/quiz_result.html", {"quiz": quiz, "ergebniss": ergebniss, "selected_answer": selected_answer})
+    
+    # GET: Quiz anzeigen
+    return render(request, "school/take_quiz.html", {"quiz": quiz})
 
 @login_required
 def upload_material(request):
+    # Nur Lehrer dürfen Materialien hochladen
     if request.user.person.role != "teacher":
         return HttpResponseForbidden("Only teachers can upload materials")
+    
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            form.save()
+            form.save()  # Material speichern
             return redirect("material_detail", lesson_id=form.cleaned_data["lesson"].id)
     else:
-        form = UploadFileForm(user=request.user)
-    return render(request, "school/upload_material.html", { "form": form })
-
+        form = UploadFileForm(user=request.user)  # Leeres Formular für GET
+    
+    return render(request, "school/upload_material.html", {"form": form})
 @login_required
 def material_detail(request, lesson_id):
+    # Material-Details für eine bestimmte Lektion anzeigen
     lesson = get_object_or_404(Lesson, id=lesson_id)
    
+    # Zugriffskontrolle für Schüler
     if request.user.person.role == "student":
         student = request.user.student
-        is_enrolled = Enrollment.objects.filter( student=student, lesson=lesson ).exists()
+        is_enrolled = Enrollment.objects.filter(student=student, lesson=lesson).exists()
         if not is_enrolled:
-            return HttpResponseForbidden("You are not enrolled in this lesson")
+            return HttpResponseForbidden("Sie sind nicht für diese Lektion eingeschrieben")
  
+    # Zugriffskontrolle für Lehrer
     if request.user.person.role == "teacher":
         if lesson not in request.user.lessons.all():
-            return HttpResponseForbidden("You are not teaching this lesson")
+            return HttpResponseForbidden("Sie unterrichten diese Lektion nicht")
+
+    # Materialien abrufen
     materials = lesson.lernmaterials.all()
-    return render(request, "school/material_detail.html", { "lesson": lesson, "materials": materials })
+    return render(request, "school/material_detail.html", {"lesson": lesson, "materials": materials})
+
 
 def karriere_view(request):
+    # Alle Karriereangebote abrufen und nach Erstellungsdatum sortieren
     job = Karriere.objects.all().order_by("-erstellt_at")
     return render(request, "school/karrierepage.html", {"job": job})
 
+
 def job_detail_view(request, pk):
+    # Details zu einem bestimmten Job abrufen
     job = get_object_or_404(Karriere, pk=pk)
     return render(request, "school/jobdetail.html", {"job": job})
 
+
 @login_required
 def profile_view(request):
+    # Profilansicht des aktuellen Benutzers
     return render(request, "school/profile.html")
+
 
 @login_required
 def profile_edit(request):
+    # Profilbearbeitung für Lehrer oder Schüler
     person = request.user.person
     student = None
    
     if person.role == "teacher":
+        # Lehrer: PersonForm mit Branch-Feld
         person_form = PersonForm(request.POST or None, request.FILES or None, instance=person)
     else:
+        # Schüler: Branch-Feld entfernen
         person_form = PersonForm(request.POST or None, request.FILES or None, instance=person)
         person_form.fields.pop("branch")
+
     if person.role == "student":
+        # Schüler-spezifische Daten bearbeiten
         student = request.user.student
         student_form = StudentForm(request.POST or None, instance=student)
     else:
         student_form = None
+
     if request.method == "POST":
         if person_form.is_valid() and (not student_form or student_form.is_valid()):
             person_form.save()
             if student_form:
                 student_form.save()
             return redirect("profile_view")
-    return render(request, "school/profile_edit.html", { "person_form": person_form, "student_form": student_form })
 
-# Google Gemini client 
+    return render(request, "school/profile_edit.html", {"person_form": person_form, "student_form": student_form})
+
+
+# Google Gemini Client initialisieren
 client = genai.Client(api_key=settings.GEMINI_API_KEY) 
+
+
 @login_required
 def chat_page(request):
+    # Chat-Seite anzeigen
     return render(request, "school/chat.html")
 
 
@@ -477,10 +556,11 @@ def chat_page(request):
 @csrf_protect
 @login_required
 def gemini_chat(request):
+    # API-Endpunkt für den Gemini Chat
     try:
         api_key = getattr(settings, "GEMINI_API_KEY", None)
         if not api_key:
-            return JsonResponse({"error": "GEMINI_API_KEY is not configured."}, status=500)
+            return JsonResponse({"error": "GEMINI_API_KEY ist nicht konfiguriert."}, status=500)
 
         from google import genai
         client = genai.Client(api_key=api_key)
@@ -490,6 +570,7 @@ def gemini_chat(request):
         if not message:
             return JsonResponse({"error": "Keine Nachricht"}, status=400)
 
+        # Antwort vom Gemini-Modell generieren
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=message,
